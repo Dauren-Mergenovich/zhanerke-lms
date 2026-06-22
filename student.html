@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет ученика | Жанерке Скакова</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --anthracite: #0a0a0a;
+            --anthracite-light: #141414;
+            --anthracite-card: #1c1c1c;
+            --white: #ffffff;
+            --text-gray: #a0a0a0;
+            --gold: #d4af37;
+            --gold-hover: #f3cf58;
+            --emerald: #0b4d42;
+            --emerald-light: #107c6c;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--anthracite);
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 320px;
+            background-color: var(--anthracite-light);
+            border-right: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex-shrink: 0;
+            transition: var(--transition);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--white);
+        }
+
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+
+        .logo-area span {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .course-selector-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .course-selector-label {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .course-select {
+            width: 100%;
+            background: var(--anthracite-card);
+            border: 1px solid var(--glass-border);
+            color: var(--white);
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .course-select:focus {
+            border-color: var(--gold);
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 10px;
+        }
+
+        /* Course Tree (Modules & Lessons) */
+        .module-group {
+            margin-bottom: 20px;
+        }
+
+        .module-title {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            color: var(--gold);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border-left: 2px solid var(--gold);
+            background: rgba(212, 175, 55, 0.03);
+            margin-bottom: 8px;
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .lessons-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-left: 8px;
+        }
+
+        .lesson-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            user-select: none;
+        }
+
+        .lesson-item:hover:not(.locked) {
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--white);
+        }
+
+        .lesson-item.active {
+            background: var(--emerald);
+            color: var(--white);
+            font-weight: 500;
+        }
+
+        .lesson-item.locked {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .lesson-icon {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .lesson-icon.completed {
+            color: #2ecc71;
+        }
+
+        .lesson-icon.unlocked {
+            color: var(--gold);
+        }
+
+        .lesson-icon.locked-icon {
+            color: var(--text-gray);
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--text-gray);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 0.85rem;
+        }
+
+        .sidebar-btn:hover {
+            color: var(--white);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--white);
+        }
+
+        /* Main Content View */
+        .main-content {
+            flex-grow: 1;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background-color: var(--anthracite);
+        }
+
+        .top-navbar {
+            height: 70px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background: var(--anthracite-light);
+        }
+
+        .menu-toggle {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 300px;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            white-space: nowrap;
+        }
+
+        .progress-track {
+            flex-grow: 1;
+            height: 6px;
+            background: var(--anthracite-card);
+            border-radius: 3px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .workspace {
+            flex-grow: 1;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .lesson-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .breadcrumb {
+            font-size: 0.85rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .lesson-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+        }
+
+        /* Player Container */
+        .video-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #000;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: var(--anthracite-light);
+            color: var(--text-gray);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .video-placeholder i {
+            font-size: 3rem;
+            color: var(--gold);
+        }
+
+        /* Workspace actions */
+        .workspace-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background-color: var(--gold);
+            color: var(--anthracite);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--gold-hover);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+            color: var(--white);
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--glass-border);
+            background: transparent;
+            color: var(--white);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--white);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* Expiration blocking Overlay */
+        .expired-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10,10,10,0.92);
+            backdrop-filter: blur(12px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .expired-card {
+            background: var(--anthracite-light);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 40px;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .expired-icon {
+            font-size: 4rem;
+            color: #e74c3c;
+            animation: pulse 2s infinite;
+        }
+
+        .expired-card h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--white);
+        }
+
+        .expired-card p {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* Welcome screen when no courses are selected/owned */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            flex-grow: 1;
+            padding: 40px;
+            gap: 20px;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .welcome-screen i {
+            font-size: 4rem;
+            color: var(--gold);
+        }
+
+        .welcome-screen h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+        }
+
+        .welcome-screen p {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        .available-courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .available-course-card {
+            background: var(--anthracite-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: left;
+            transition: var(--transition);
+        }
+
+        .available-course-card:hover {
+            border-color: var(--gold);
+        }
+
+        .available-course-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .available-course-info p {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+        }
+
+        .course-price-badge {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive styling */
+        @media (max-width: 992px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+                max-height: 250px;
+            }
+            .sidebar.collapsed {
+                display: none;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            .top-navbar {
+                padding: 0 20px;
+            }
+            .workspace {
+                padding: 20px;
+            }
+            .lesson-title {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="logo-area">
+                    <img src="Лого и картинки /logo.png" alt="Логотип">
+                    <span>Жанерке Скакова</span>
+                </a>
+                
+                <div class="course-selector-wrapper" id="course-selector-area" style="display: none;">
+                    <span class="course-selector-label">Выберите курс:</span>
+                    <select class="course-select" id="course-select-input"></select>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div id="course-tree-container">
+                    <!-- Dynamic modules and lessons tree -->
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span><i class="fa-solid fa-user" style="color: var(--gold); margin-right: 6px;"></i> <strong id="user-name-label">Ученик</strong></span>
+                </div>
+                <a href="/" class="sidebar-btn"><i class="fa-solid fa-home"></i> На главную</a>
+                <button class="sidebar-btn" id="sidebar-logout-btn"><i class="fa-solid fa-sign-out-alt"></i> Выйти</button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <header class="top-navbar">
+                <button class="menu-toggle" id="toggle-sidebar-btn" aria-label="Открыть меню">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                
+                <div class="progress-bar-container" id="top-progress-area" style="display: none;">
+                    <span class="progress-text" id="progress-text-label">Прогресс: 0%</span>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill-bar"></div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 0.9rem; color: var(--text-gray);" id="subscription-expires-label">
+                    <!-- Expire date will be shown here -->
+                </div>
+            </header>
+
+            <div class="workspace" id="workspace-area">
+                <!-- Dynamic main workspace contents -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Expiration Overlay Modal (shown only when expired) -->
+    <div class="expired-overlay" id="expired-overlay" style="display: none;">
+        <div class="expired-card">
+            <i class="fa-solid fa-clock expired-icon"></i>
+            <h2>Доступ к курсу истек</h2>
+            <p>Срок действия вашей подписки закончился. Чтобы продолжить обучение и открыть доступ к урокам, пожалуйста, продлите подписку.</p>
+            <button class="btn btn-primary" id="renew-subscription-btn"><i class="fa-solid fa-credit-card"></i> Продлить подписку</button>
+            <a href="/" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Вернуться на главную</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentUser = null;
+            let myCourses = [];
+            let activeCourse = null;
+            let activeLesson = null;
+            let courseTreeData = null;
+
+            const userLabel = document.getElementById('user-name-label');
+            const logoutBtn = document.getElementById('sidebar-logout-btn');
+            const courseSelect = document.getElementById('course-select-input');
+            const courseSelectorArea = document.getElementById('course-selector-area');
+            const courseTreeContainer = document.getElementById('course-tree-container');
+            const progressArea = document.getElementById('top-progress-area');
+            const progressFill = document.getElementById('progress-fill-bar');
+            const progressText = document.getElementById('progress-text-label');
+            const expiresLabel = document.getElementById('subscription-expires-label');
+            const workspace = document.getElementById('workspace-area');
+            const expiredOverlay = document.getElementById('expired-overlay');
+            const renewBtn = document.getElementById('renew-subscription-btn');
+            
+            const sidebar = document.getElementById('sidebar');
+            const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+
+            // Toggle sidebar for mobile layouts
+            if (toggleSidebarBtn) {
+                toggleSidebarBtn.addEventListener('click', () => {
+                    sidebar.classList.toggle('collapsed');
+                });
+            }
+
+            // Fetch current user and check authentication
+            async function initCabinet() {
+                try {
+                    const authRes = await fetch('/api/auth/me');
+                    const authData = await authRes.json();
+                    if (!authRes.ok || !authData.user) {
+                        // Not authenticated -> redirect to landing
+                        window.location.href = '/?showLogin=true';
+                        return;
+                    }
+                    currentUser = authData.user;
+                    userLabel.textContent = currentUser.name;
+
+                    // Load user's active/expired courses
+                    await loadMyCourses();
+                } catch (err) {
+                    console.error('Cabinet initialization error:', err);
+                    window.location.href = '/';
+                }
+            }
+
+            // Load student's courses
+            async function loadMyCourses() {
+                try {
+                    const res = await fetch('/api/my-courses');
+                    myCourses = await res.json();
+
+                    if (myCourses.length === 0) {
+                        // User has no courses yet. Show welcome screen with catalog.
+                        showWelcomeScreen();
+                        return;
+                    }
+
+                    // Populate Select options
+                    courseSelect.innerHTML = '';
+                    myCourses.forEach(c => {
+                        const option = document.createElement('option');
+                        option.value = c.id;
+                        option.textContent = c.title + (c.is_expired ? ' (Истек)' : '');
+                        courseSelect.appendChild(option);
+                    });
+                    
+                    courseSelectorArea.style.display = 'block';
+
+                    // Set first course active
+                    const firstCourse = myCourses[0];
+                    await selectCourse(firstCourse.id);
+
+                    // Add change listener
+                    courseSelect.addEventListener('change', (e) => {
+                        selectCourse(parseInt(e.target.value));
+                    });
+
+                } catch (err) {
+                    console.error('Error loading courses:', err);
+                }
+            }
+
+            // Select active course
+            async function selectCourse(courseId) {
+                activeCourse = myCourses.find(c => c.id === courseId);
+                if (!activeCourse) return;
+
+                // Update select dropdown value in case it was changed programmatically
+                courseSelect.value = courseId;
+
+                // Check expiration
+                if (activeCourse.is_expired) {
+                    showExpirationOverlay(activeCourse);
+                    return;
+                } else {
+                    expiredOverlay.style.display = 'none';
+                }
+
+                // Load lessons and modules tree
+                await loadCourseLessons(courseId);
+            }
+
+            // Load tree list from API
+            async function loadCourseLessons(courseId) {
+                try {
+                    const res = await fetch(`/api/courses/${courseId}/lessons`);
+                    if (res.status === 403) {
+                        const errorData = await res.json();
+                        if (errorData.expired) {
+                            showExpirationOverlay(activeCourse);
+                            return;
+                        }
+                    }
+                    if (!res.ok) {
+                        throw new Error('Could not load course lessons');
+                    }
+
+                    courseTreeData = await res.json();
+
+                    // Format expires date
+                    const expireDate = new Date(courseTreeData.expires_at.replace(' ', 'T'));
+                    expiresLabel.innerHTML = `<i class="fa-solid fa-calendar-day" style="color: var(--gold); margin-right: 6px;"></i>Доступ до: <strong>${expireDate.toLocaleDateString('ru-RU')}</strong>`;
+
+                    renderCourseTree();
+                    updateProgressBar();
+
+                    // Select default active lesson:
+                    // 1. Check if we have current_lesson_id in access, and it matches an unlocked lesson.
+                    // 2. Otherwise select the first unlocked lesson.
+                    let targetLesson = null;
+                    const lessons = [];
+                    courseTreeData.modules.forEach(m => m.lessons.forEach(l => lessons.push(l)));
+
+                    if (activeCourse.current_lesson_id) {
+                        targetLesson = lessons.find(l => l.id === activeCourse.current_lesson_id && l.is_unlocked);
+                    }
+
+                    if (!targetLesson) {
+                        // find the first unlocked & not completed, or just first unlocked
+                        targetLesson = lessons.find(l => l.is_unlocked && !l.is_completed) || lessons.find(l => l.is_unlocked);
+                    }
+
+                    if (targetLesson) {
+                        selectLesson(targetLesson);
+                    } else if (lessons.length > 0) {
+                        selectLesson(lessons[0]);
+                    } else {
+                        showEmptyCourseWorkspace();
+                    }
+
+                } catch (err) {
+                    console.error('Error loading course tree:', err);
+                    workspace.innerHTML = `<div class="video-placeholder"><i class="fa-solid fa-circle-exclamation" style="color:#e74c3c;"></i><h3>Ошибка загрузки уроков</h3><p>${err.message}</p></div>`;
+                }
+            }
+
+            // Render Modules and Lessons tree in the sidebar
+            function renderCourseTree() {
+                courseTreeContainer.innerHTML = '';
+                if (!courseTreeData || !courseTreeData.modules.length) {
+                    courseTreeContainer.innerHTML = '<div style="padding:20px; color:var(--text-gray); text-align:center;">Уроков пока нет.</div>';
+                    return;
+                }
+
+                courseTreeData.modules.forEach(mod => {
+                    const modGroup = document.createElement('div');
+                    modGroup.className = 'module-group';
+
+                    const modTitle = document.createElement('div');
+                    modTitle.className = 'module-title';
+                    modTitle.textContent = mod.title;
+                    modGroup.appendChild(modTitle);
+
+                    const lessonsList = document.createElement('ul');
+                    lessonsList.className = 'lessons-list';
+
+                    mod.lessons.forEach(lesson => {
+                        const item = document.createElement('li');
+                        item.className = 'lesson-item';
+                        if (activeLesson && activeLesson.id === lesson.id) {
+                            item.classList.add('active');
+                        }
+                        if (!lesson.is_unlocked) {
+                            item.classList.add('locked');
+                        }
+
+                        // Icon selection
+                        let iconHTML = '';
+                        if (lesson.is_completed) {
+                            iconHTML = '<i class="fa-solid fa-circle-check lesson-icon completed" title="Пройден"></i>';
+                        } else if (lesson.is_unlocked) {
+                            iconHTML = '<i class="fa-solid fa-circle-play lesson-icon unlocked" title="Доступен"></i>';
+                        } else {
+                            iconHTML = '<i class="fa-solid fa-lock lesson-icon locked-icon" title="Заблокирован (Drip Feed)"></i>';
+                        }
+
+                        item.innerHTML = `
+                            ${iconHTML}
+                            <span>${lesson.title}</span>
+                        `;
+
+                        if (lesson.is_unlocked) {
+                            item.addEventListener('click', () => {
+                                selectLesson(lesson);
+                            });
+                        }
+
+                        lessonsList.appendChild(item);
+                    });
+
+                    modGroup.appendChild(lessonsList);
+                    courseTreeContainer.appendChild(modGroup);
+                });
+            }
+
+            // Select lesson to display in workspace
+            function selectLesson(lesson) {
+                activeLesson = lesson;
+                
+                // Highlight in tree UI
+                document.querySelectorAll('.lesson-item').forEach(el => el.classList.remove('active'));
+                const lessonItems = Array.from(document.querySelectorAll('.lesson-item'));
+                const currentTreeItem = lessonItems.find(el => el.textContent.includes(lesson.title));
+                if (currentTreeItem) {
+                    currentTreeItem.classList.add('active');
+                }
+
+                // Render in workspace
+                const module = courseTreeData.modules.find(m => m.lessons.some(l => l.id === lesson.id));
+                const modTitle = module ? module.title : '';
+
+                workspace.innerHTML = `
+                    <div class="lesson-header">
+                        <div class="breadcrumb">${activeCourse.title} &nbsp;▸&nbsp; ${modTitle}</div>
+                        <h1 class="lesson-title">${lesson.title}</h1>
+                    </div>
+
+                    <div class="video-container">
+                        ${lesson.youtube_link ? `
+                            <iframe src="${lesson.youtube_link}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                        ` : `
+                            <div class="video-placeholder">
+                                <i class="fa-solid fa-lock"></i>
+                                <h3>Этот урок еще закрыт</h3>
+                                <p>Завершите предыдущие уроки, чтобы разблокировать это видео.</p>
+                            </div>
+                        `}
+                    </div>
+
+                    <div class="workspace-actions">
+                        <div></div>
+                        <div id="action-btn-area">
+                            <!-- Action button will be populated dynamically -->
+                        </div>
+                    </div>
+                `;
+
+                // Render Action Button
+                const btnArea = document.getElementById('action-btn-area');
+                if (lesson.is_completed) {
+                    // Already completed, check if we have a next lesson to offer
+                    const next = getNextLesson(lesson.id);
+                    if (next) {
+                        const btn = document.createElement('button');
+                        btn.className = 'btn btn-primary';
+                        btn.innerHTML = 'Следующий урок <i class="fa-solid fa-arrow-right"></i>';
+                        btn.onclick = () => selectLesson(next);
+                        btnArea.appendChild(btn);
+                    } else {
+                        btnArea.innerHTML = '<span style="color:#2ecc71; font-weight:500;"><i class="fa-solid fa-circle-check"></i> Курс успешно пройден!</span>';
+                    }
+                } else if (lesson.is_unlocked) {
+                    // Unlocked but not completed -> show "Пройти урок"
+                    const btn = document.createElement('button');
+                    btn.className = 'btn btn-success';
+                    btn.id = 'complete-lesson-btn';
+                    btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Пройти урок';
+                    btn.onclick = () => completeLesson(lesson.id);
+                    btnArea.appendChild(btn);
+                }
+            }
+
+            // API trigger to complete lesson
+            async function completeLesson(lessonId) {
+                const btn = document.getElementById('complete-lesson-btn');
+                if (btn) btn.disabled = true;
+
+                try {
+                    const res = await fetch(`/api/lessons/${lessonId}/complete`, {
+                        method: 'POST'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.error || 'Failed to complete lesson');
+                    }
+
+                    // Reload lessons state to reflect updates in tree & progress
+                    await loadCourseLessons(activeCourse.id);
+                    
+                } catch (err) {
+                    alert('Ошибка при сохранении прогресса: ' + err.message);
+                    if (btn) btn.disabled = false;
+                }
+            }
+
+            // Search next lesson in sequence
+            function getNextLesson(currentLessonId) {
+                const lessons = [];
+                courseTreeData.modules.forEach(m => m.lessons.forEach(l => lessons.push(l)));
+                const idx = lessons.findIndex(l => l.id === currentLessonId);
+                if (idx !== -1 && idx + 1 < lessons.length) {
+                    return lessons[idx + 1];
+                }
+                return null;
+            }
+
+            // Update top progress bar values
+            function updateProgressBar() {
+                const lessons = [];
+                courseTreeData.modules.forEach(m => m.lessons.forEach(l => lessons.push(l)));
+                const total = lessons.length;
+                if (total === 0) {
+                    progressArea.style.display = 'none';
+                    return;
+                }
+
+                const completed = lessons.filter(l => l.is_completed).length;
+                const percentage = Math.round((completed / total) * 100);
+
+                progressArea.style.display = 'flex';
+                progressFill.style.style = `width: ${percentage}%`;
+                progressFill.style.width = percentage + '%';
+                progressText.textContent = `Прогресс: ${percentage}% (${completed}/${total})`;
+            }
+
+            function showExpirationOverlay(course) {
+                expiredOverlay.style.display = 'flex';
+                // Bind renew button
+                renewBtn.onclick = async () => {
+                    try {
+                        const res = await fetch('/api/payments/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ course_id: course.id })
+                        });
+                        const data = await res.json();
+                        if (data.checkout_url) {
+                            window.location.href = data.checkout_url;
+                        }
+                    } catch (err) {
+                        alert('Ошибка оформления продления: ' + err.message);
+                    }
+                };
+            }
+
+            function showEmptyCourseWorkspace() {
+                workspace.innerHTML = `
+                    <div class="video-placeholder">
+                        <i class="fa-solid fa-folder-open"></i>
+                        <h3>Этот курс пуст</h3>
+                        <p>Администратор еще не загрузил блоки и уроки для этого курса.</p>
+                    </div>
+                `;
+            }
+
+            async function showWelcomeScreen() {
+                courseSelectorArea.style.display = 'none';
+                progressArea.style.display = 'none';
+                expiresLabel.textContent = '';
+
+                // Fetch published courses catalog to display them
+                try {
+                    const res = await fetch('/api/courses');
+                    const courses = await res.json();
+
+                    let courseCards = '';
+                    courses.forEach(c => {
+                        courseCards += `
+                            <div class="available-course-card">
+                                <div class="available-course-info">
+                                    <h4>${c.title}</h4>
+                                    <p>${c.description || ''}</p>
+                                </div>
+                                <div style="display:flex; align-items:center; gap:15px;">
+                                    <span class="course-price-badge">${c.price.toLocaleString('ru-RU')} ₸</span>
+                                    <button class="btn btn-primary" onclick="buyCourseFromCabinet(${c.id})" style="padding: 10px 18px; font-size:0.9rem;">Купить</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    workspace.innerHTML = `
+                        <div class="welcome-screen">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                            <h2>Добро пожаловать в учебный кабинет!</h2>
+                            <p>У вас пока нет купленных и активных курсов. Ниже представлены доступные программы обучения, которые вы можете приобрести прямо сейчас:</p>
+                            <div class="available-courses-grid">
+                                ${courseCards || '<p style="color:var(--text-gray);">Доступных курсов для покупки нет.</p>'}
+                            </div>
+                        </div>
+                    `;
+                } catch (err) {
+                    workspace.innerHTML = `<div class="welcome-screen"><h2>Добро пожаловать</h2><p>У вас нет активных курсов.</p></div>`;
+                }
+            }
+
+            // Expose globally for welcome catalog click handling
+            window.buyCourseFromCabinet = async (courseId) => {
+                try {
+                    const res = await fetch('/api/payments/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ course_id: courseId })
+                    });
+                    const data = await res.json();
+                    if (data.checkout_url) {
+                        window.location.href = data.checkout_url;
+                    }
+                } catch (err) {
+                    alert('Не удалось начать оплату: ' + err.message);
+                }
+            };
+
+            // Logout event handler
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    try {
+                        const res = await fetch('/api/auth/logout', { method: 'POST' });
+                        if (res.ok) {
+                            window.location.href = '/';
+                        }
+                    } catch (err) {
+                        console.error('Logout error:', err);
+                    }
+                });
+            }
+
+            initCabinet();
+        });
+    </script>
+</body>
+</html>

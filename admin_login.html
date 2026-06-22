@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в панель управления | Жанерке Скакова</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <style>
+        body {
+            background-color: var(--anthracite);
+            color: var(--white);
+            font-family: 'Outfit', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: var(--anthracite-light);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .login-header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .login-header img {
+            height: 50px;
+            width: auto;
+        }
+
+        .login-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--white);
+        }
+
+        .login-header p {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <div class="login-header">
+            <img src="Лого и картинки /logo.png" alt="Логотип">
+            <h2>Панель управления</h2>
+            <p>Вход только для преподавателей и администраторов</p>
+        </div>
+
+        <form id="admin-login-form" class="modal-form">
+            <div class="form-group">
+                <label for="admin-email">Email</label>
+                <input type="email" id="admin-email" required placeholder="admin@faceread.kz" autofocus>
+            </div>
+            <div class="form-group">
+                <label for="admin-password">Пароль</label>
+                <input type="password" id="admin-password" required placeholder="••••••••">
+            </div>
+            <div class="form-error" id="admin-login-error"></div>
+            
+            <button type="submit" class="btn btn-primary w-100" style="padding:14px; font-weight:600;">Войти в панель</button>
+        </form>
+        
+        <a href="/" class="btn-link" style="text-align:center; font-size:0.9rem;">Вернуться на сайт</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('admin-login-form');
+            const errorDiv = document.getElementById('admin-login-error');
+
+            // Check if user is already logged in as admin
+            async function checkSession() {
+                try {
+                    const res = await fetch('/api/auth/me');
+                    const data = await res.json();
+                    if (res.ok && data.user && data.user.role === 'admin') {
+                        window.location.href = '/admin.html';
+                    }
+                } catch (e) {}
+            }
+            checkSession();
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorDiv.textContent = '';
+
+                const email = document.getElementById('admin-email').value;
+                const password = document.getElementById('admin-password').value;
+
+                try {
+                    const res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.error || 'Ошибка авторизации.');
+                    }
+
+                    if (data.user.role !== 'admin') {
+                        // User logged in but is not an admin!
+                        // Log out to clear cookie
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                        throw new Error('Доступ запрещен. У вас нет прав администратора.');
+                    }
+
+                    // Success -> redirect to admin dashboard
+                    window.location.href = '/admin.html';
+
+                } catch (err) {
+                    errorDiv.textContent = err.message;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

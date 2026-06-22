@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaspi Pay | Оплата заказа</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --kaspi-red: #f14635;
+            --kaspi-red-dark: #d63022;
+            --bg-gray: #f5f5f7;
+            --white: #ffffff;
+            --text-dark: #333333;
+            --text-muted: #777777;
+            --border-gray: #e2e2e6;
+            --radius: 16px;
+            --shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .pay-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-gray);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kaspi-header {
+            background-color: var(--kaspi-red);
+            color: var(--white);
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .kaspi-header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .kaspi-header img {
+            height: 30px;
+            margin-bottom: 8px;
+        }
+
+        .invoice-body {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .price-tag {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .course-name {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .qr-box {
+            width: 220px;
+            height: 220px;
+            border: 2px solid var(--border-gray);
+            border-radius: var(--radius);
+            padding: 15px;
+            background: var(--white);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+        }
+
+        .qr-placeholder {
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                45deg,
+                #eee,
+                #eee 10px,
+                #ddd 10px,
+                #ddd 20px
+            );
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .qr-placeholder i {
+            font-size: 3rem;
+            color: var(--kaspi-red);
+        }
+
+        .instructions {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-kaspi {
+            background-color: var(--kaspi-red);
+            color: var(--white);
+        }
+
+        .btn-kaspi:hover {
+            background-color: var(--kaspi-red-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-kaspi:active {
+            transform: translateY(0);
+        }
+
+        .btn-outline {
+            border: 1px solid var(--border-gray);
+            background: transparent;
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            background-color: #fafafc;
+            color: var(--text-dark);
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background-color: var(--border-gray);
+        }
+
+        .loader-ring {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .simulation-banner {
+            background: #fff9e6;
+            border: 1px dashed #ffe0b2;
+            color: #b78103;
+            padding: 15px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="pay-container">
+        <header class="kaspi-header">
+            <img src="https://kaspi.kz/img/logo/KaspiPay_logo_white.svg" alt="Kaspi Pay" onerror="this.src='https://kaspi.kz/img/logo/logo_white.svg'; this.onerror=null;">
+            <h1>Kaspi QR Оплата</h1>
+        </header>
+
+        <div class="invoice-body" id="invoice-area">
+            <div>
+                <div class="course-name" id="course-name-lbl">Загрузка курса...</div>
+                <div class="price-tag" id="price-lbl">0 ₸</div>
+            </div>
+
+            <div class="qr-box">
+                <!-- QR Mockup -->
+                <div class="qr-placeholder">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span style="font-weight:600; font-size:0.85rem;">Сканируйте через Kaspi.kz</span>
+                </div>
+            </div>
+
+            <p class="instructions">Откройте приложение <strong>Kaspi.kz</strong><br>выберите вкладку <strong>Kaspi QR</strong> и отсканируйте код</p>
+
+            <div class="divider"></div>
+
+            <!-- SIMULATION TOOLS -->
+            <div class="simulation-banner">
+                <strong><i class="fa-solid fa-flask"></i> Симулятор API Вебхуков</strong>
+                Для ручного тестирования нажмите кнопку ниже. Это отправит автоматический POST webhook-запрос от Kaspi на бэкэнд для подтверждения оплаты:
+                <button class="btn btn-kaspi btn-sm" id="btn-simulate-webhook" style="padding:10px; font-size:0.85rem; border-radius:6px; margin-top:5px;">
+                    <i class="fa-solid fa-circle-play"></i> Симулировать успешную оплату
+                </button>
+            </div>
+
+            <button class="btn btn-outline" id="btn-cancel"><i class="fa-solid fa-arrow-left"></i> Отменить оплату</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const txId = urlParams.get('tx_id');
+
+            if (!txId) {
+                alert('Неверные параметры оплаты.');
+                window.location.href = '/';
+                return;
+            }
+
+            const courseNameLabel = document.getElementById('course-name-lbl');
+            const priceLabel = document.getElementById('price-lbl');
+            const simulateBtn = document.getElementById('btn-simulate-webhook');
+            const cancelBtn = document.getElementById('btn-cancel');
+            const invoiceArea = document.getElementById('invoice-area');
+
+            let paymentDetails = null;
+            let checkInterval = null;
+
+            // Fetch payment status/details on startup
+            async function getPaymentDetails() {
+                try {
+                    const res = await fetch(`/api/payments/${txId}`);
+                    if (!res.ok) {
+                        throw new Error('Transaction not found');
+                    }
+                    paymentDetails = await res.json();
+                    
+                    // Fetch course info to display its name
+                    const courseRes = await fetch('/api/courses');
+                    const courses = await courseRes.json();
+                    const course = courses.find(c => c.id === paymentDetails.course_id);
+                    
+                    courseNameLabel.textContent = course ? course.title : 'Курс обучения';
+                    priceLabel.textContent = paymentDetails.amount.toLocaleString('ru-RU') + ' ₸';
+
+                    // Start polling payment status to see if webhook was successful
+                    startStatusPolling();
+
+                } catch (err) {
+                    console.error(err);
+                    alert('Не удалось загрузить данные о транзакции.');
+                    window.location.href = '/';
+                }
+            }
+
+            // Simulate Callback Webhook from Kaspi Pay
+            simulateBtn.addEventListener('click', async () => {
+                simulateBtn.disabled = true;
+                simulateBtn.innerHTML = '<span class="loader-ring"></span> Обработка вебхука...';
+
+                try {
+                    const res = await fetch('/api/webhooks/kaspi', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            kaspi_tx_id: txId,
+                            status: 'paid'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) {
+                        throw new Error(data.error || 'Webhook failed');
+                    }
+                    console.log('Webhook simulated successfully:', data.message);
+                } catch (err) {
+                    alert('Ошибка симулятора: ' + err.message);
+                    simulateBtn.disabled = false;
+                    simulateBtn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Симулировать успешную оплату';
+                }
+            });
+
+            // Cancel click
+            cancelBtn.addEventListener('click', () => {
+                window.location.href = '/';
+            });
+
+            // Polling check to automatically transition layout when status is 'paid'
+            function startStatusPolling() {
+                checkInterval = setInterval(async () => {
+                    try {
+                        const res = await fetch(`/api/payments/${txId}`);
+                        const payment = await res.json();
+
+                        if (payment.status === 'paid') {
+                            clearInterval(checkInterval);
+                            showSuccessScreen();
+                        }
+                    } catch (e) {
+                        console.error('Error polling transaction status:', e);
+                    }
+                }, 1500); // Check every 1.5 seconds
+            }
+
+            function showSuccessScreen() {
+                invoiceArea.innerHTML = `
+                    <div style="padding:40px 0; display:flex; flex-direction:column; align-items:center; gap:20px;">
+                        <i class="fa-solid fa-circle-check" style="font-size:5rem; color:#2ecc71;"></i>
+                        <h2 style="color:#2ecc71;">Оплата прошла успешно!</h2>
+                        <p>Ваша транзакция <strong>${txId}</strong> проведена.<br>Доступ к курсу активирован.</p>
+                        <p style="color:var(--text-muted); font-size:0.9rem;">Перенаправляем в личный кабинет через 3 секунды...</p>
+                        <button class="btn btn-kaspi" onclick="window.location.href='/student.html'">Перейти в кабинет ученика</button>
+                    </div>
+                `;
+                
+                // Redirect automatically
+                setTimeout(() => {
+                    window.location.href = '/student.html';
+                }, 3000);
+            }
+
+            // Cleanup interval on page leave
+            window.addEventListener('beforeunload', () => {
+                if (checkInterval) clearInterval(checkInterval);
+            });
+
+            getPaymentDetails();
+        });
+    </script>
+</body>
+</html>

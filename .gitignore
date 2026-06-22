@@ -1,0 +1,7 @@
+node_modules/
+database.sqlite
+mock_emails/
+.DS_Store
+.venv_pdf/
+*.zip
+*.docx
