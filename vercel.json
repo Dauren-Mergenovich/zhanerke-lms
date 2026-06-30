@@ -3,19 +3,24 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "destination": "/api/index.js?path=/api/$1"
     },
     {
       "source": "/student",
-      "destination": "/api/index.js"
+      "destination": "/api/index.js?path=/student"
     },
     {
       "source": "/admin",
-      "destination": "/api/index.js"
+      "destination": "/api/index.js?path=/admin"
     },
     {
       "source": "/admin/dashboard",
-      "destination": "/api/index.js"
+      "destination": "/api/index.js?path=/admin/dashboard"
     }
-  ]
+  ],
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "*.html"
+    }
+  }
 }

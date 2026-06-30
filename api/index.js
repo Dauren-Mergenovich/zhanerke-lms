@@ -14,6 +14,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Vercel path forwarding middleware
+app.use((req, res, next) => {
+  if (req.query && req.query.path) {
+    req.url = req.query.path;
+  }
+  next();
+});
+
 // Serve static files from root
 app.use(express.static(path.join(__dirname, '..')));
 // Support asset folders explicitly
