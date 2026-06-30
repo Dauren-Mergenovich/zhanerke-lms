@@ -98,7 +98,7 @@ app.post('/api/auth/register', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера при регистрации.' });
+    res.status(500).json({ error: 'Ошибка сервера при регистрации: ' + err.message });
   }
 });
 
@@ -132,7 +132,7 @@ app.post('/api/auth/login', async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Ошибка сервера при авторизации.' });
+    res.status(500).json({ error: 'Ошибка сервера при авторизации: ' + err.message });
   }
 });
 
