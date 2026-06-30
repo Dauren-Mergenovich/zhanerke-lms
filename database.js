@@ -101,9 +101,23 @@ async function initDatabase() {
       name TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'student',
       status TEXT NOT NULL DEFAULT 'active',
+      reset_token TEXT,
+      reset_token_expires INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  // Migration: Add columns to existing tables if they don't exist
+  try {
+    await run('ALTER TABLE users ADD COLUMN reset_token TEXT');
+  } catch (e) {
+    // Ignore error if column already exists
+  }
+  try {
+    await run('ALTER TABLE users ADD COLUMN reset_token_expires INTEGER');
+  } catch (e) {
+    // Ignore error if column already exists
+  }
 
   // Create Courses table
   await run(`

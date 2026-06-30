@@ -18,6 +18,10 @@
       "destination": "/api/index.js?path=/admin/dashboard"
     },
     {
+      "source": "/reset-password",
+      "destination": "/api/index.js?path=/reset-password"
+    },
+    {
       "source": "/(.*)",
       "destination": "/api/index.js?path=/$1"
     }

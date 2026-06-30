@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const { initDatabase, run, get, all } = require('../database');
 
 const app = express();
@@ -141,6 +143,96 @@ app.post('/api/auth/login', async (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ success: true });
+});
+
+// Forgot password: send recovery link
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Пожалуйста, укажите ваш Email.' });
+  }
+
+  try {
+    const user = await get('SELECT id, name FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+    if (!user) {
+      return res.status(400).json({ error: 'Пользователь с таким Email не найден.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expires = Date.now() + 3600000; // 1 hour expiration
+
+    await run('UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?', [token, expires, user.id]);
+
+    const protocol = req.headers['x-forwarded-proto'] || 'http';
+    const resetLink = `${protocol}://${req.headers.host}/reset-password?token=${token}`;
+
+    console.log(`[PASSWORD RESET] Link generated for ${email}: ${resetLink}`);
+
+    if (process.env.SMTP_HOST) {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST.trim(),
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+          user: process.env.SMTP_USER.trim(),
+          pass: process.env.SMTP_PASS.trim()
+        }
+      });
+
+      const mailOptions = {
+        from: process.env.SMTP_FROM || `"Жанерке Скакова LMS" <noreply@${req.headers.host}>`,
+        to: email.toLowerCase().trim(),
+        subject: 'Сброс пароля | Жанерке Скакова LMS',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+            <h2 style="color: #0b4d42; text-align: center;">Восстановление доступа</h2>
+            <p>Здравствуйте, <strong>${user.name}</strong>!</p>
+            <p>Мы получили запрос на сброс пароля от вашего личного кабинета Zhanerke LMS.</p>
+            <p>Для создания нового пароля перейдите по ссылке ниже:</p>
+            <p style="text-align: center; margin: 30px 0;">
+              <a href="${resetLink}" style="background-color: #0b4d42; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Сбросить пароль</a>
+            </p>
+            <p style="color: #666; font-size: 0.9rem;">Ссылка действительна в течение 1 часа. Если вы не запрашивали сброс пароля, просто проигнорируйте это письмо.</p>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(mailOptions);
+      return res.json({ message: 'Ссылка для сброса пароля отправлена на ваш Email.' });
+    } else {
+      // SMTP is not configured: return the link directly for testing/development
+      return res.json({
+        message: 'Тестовый режим (без SMTP): перейдите по ссылке ниже для сброса пароля.',
+        link: resetLink
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Ошибка сервера при запросе сброса пароля: ' + err.message });
+  }
+});
+
+// Reset password: save new password
+app.post('/api/auth/reset-password', async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) {
+    return res.status(400).json({ error: 'Укажите токен и новый пароль.' });
+  }
+
+  try {
+    const user = await get('SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > ?', [token, Date.now()]);
+    if (!user) {
+      return res.status(400).json({ error: 'Токен сброса пароля недействителен или его срок действия истек.' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    await run('UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?', [hash, user.id]);
+
+    return res.json({ success: true, message: 'Пароль успешно изменен.' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: 'Ошибка сервера при изменении пароля: ' + err.message });
+  }
 });
 
 // Get current user info
@@ -804,6 +896,10 @@ app.get('/admin', (req, res) => {
 
 app.get('/admin/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'admin.html'));
+});
+
+app.get('/reset-password', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'reset-password.html'));
 });
 
 // Run DB init and start listening

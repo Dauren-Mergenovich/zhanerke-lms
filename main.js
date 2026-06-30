@@ -167,6 +167,17 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflow = '';
             loginError.textContent = '';
             regError.textContent = '';
+            const forgotError = document.getElementById('forgot-error');
+            const forgotSuccess = document.getElementById('forgot-success');
+            const forgotForm = document.getElementById('forgot-password-form');
+            const modalTabs = document.querySelector('.modal-tabs');
+            if (forgotError) forgotError.textContent = '';
+            if (forgotSuccess) forgotSuccess.textContent = '';
+            if (forgotForm) {
+                forgotForm.reset();
+                forgotForm.style.display = 'none';
+            }
+            if (modalTabs) modalTabs.style.display = 'flex';
             loginForm.reset();
             registerForm.reset();
         }
@@ -181,12 +192,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const forgotLink = document.getElementById('forgot-password-link');
+    const backToLoginLink = document.getElementById('back-to-login-link');
+    const forgotForm = document.getElementById('forgot-password-form');
+    const modalTabs = document.querySelector('.modal-tabs');
+
+    if (forgotLink && forgotForm && modalTabs) {
+        forgotLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalTabs.style.display = 'none';
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'none';
+            forgotForm.style.display = 'block';
+        });
+    }
+
+    if (backToLoginLink && forgotForm && modalTabs) {
+        backToLoginLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalTabs.style.display = 'flex';
+            forgotForm.style.display = 'none';
+            tabLogin.click();
+        });
+    }
+
     if (tabLogin && tabRegister) {
         tabLogin.addEventListener('click', () => {
             tabLogin.classList.add('active');
             tabRegister.classList.remove('active');
             loginForm.style.display = 'block';
             registerForm.style.display = 'none';
+            if (forgotForm) forgotForm.style.display = 'none';
         });
 
         tabRegister.addEventListener('click', () => {
@@ -194,6 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tabLogin.classList.remove('active');
             registerForm.style.display = 'block';
             loginForm.style.display = 'none';
+            if (forgotForm) forgotForm.style.display = 'none';
         });
     }
 
@@ -266,6 +303,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (err) {
                 regError.textContent = err.message;
+            }
+        });
+    }
+
+    // Forgot Password Form Submit
+    if (forgotForm) {
+        forgotForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const forgotError = document.getElementById('forgot-error');
+            const forgotSuccess = document.getElementById('forgot-success');
+            forgotError.textContent = '';
+            forgotSuccess.textContent = '';
+            
+            const email = document.getElementById('forgot-email').value;
+            
+            try {
+                const res = await fetch('/api/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || 'Ошибка запроса сброса пароля');
+                }
+                forgotSuccess.textContent = data.message || 'Ссылка отправлена!';
+                forgotForm.reset();
+            } catch (err) {
+                forgotError.textContent = err.message;
             }
         });
     }
