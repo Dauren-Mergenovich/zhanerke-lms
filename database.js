@@ -6,9 +6,15 @@ let db, run, get, all;
 if (process.env.TURSO_DATABASE_URL) {
   // Cloud Database (Turso) for Vercel / Production
   console.log('Connecting to remote Turso database...');
-  const { createClient } = require('@libsql/client/web');
+  const { createClient } = require('@libsql/client');
+  
+  let tursoUrl = process.env.TURSO_DATABASE_URL.trim();
+  if (tursoUrl.startsWith('libsql://')) {
+    tursoUrl = tursoUrl.replace('libsql://', 'https://');
+  }
+  
   db = createClient({
-    url: process.env.TURSO_DATABASE_URL.trim(),
+    url: tursoUrl,
     authToken: process.env.TURSO_AUTH_TOKEN ? process.env.TURSO_AUTH_TOKEN.trim() : undefined,
   });
 
