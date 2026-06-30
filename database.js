@@ -170,63 +170,6 @@ async function initDatabase() {
 
   console.log('Database schema created successfully.');
 
-  // Seeding default administrator if not exists
-  const adminEmail = 'admin@faceread.kz';
-  const existingAdmin = await get('SELECT * FROM users WHERE email = ?', [adminEmail]);
-  if (!existingAdmin) {
-    const adminPasswordHash = await bcrypt.hash('AdminPassword123', 10);
-    await run(
-      'INSERT INTO users (email, password_hash, name, role, status) VALUES (?, ?, ?, ?, ?)',
-      [adminEmail, adminPasswordHash, 'Жанерке Скакова', 'admin', 'active']
-    );
-    console.log('Seed: Default administrator account seeded (admin@faceread.kz / AdminPassword123)');
-  }
-
-  // Seeding default student if not exists
-  const studentEmail = 'student@faceread.kz';
-  const existingStudent = await get('SELECT * FROM users WHERE email = ?', [studentEmail]);
-  if (!existingStudent) {
-    const studentPasswordHash = await bcrypt.hash('StudentPassword123', 10);
-    const studentResult = await run(
-      'INSERT INTO users (email, password_hash, name, role, status) VALUES (?, ?, ?, ?, ?)',
-      [studentEmail, studentPasswordHash, 'Иван Тестов', 'student', 'active']
-    );
-
-    const now = new Date();
-    
-    const exp1 = new Date();
-    exp1.setDate(now.getDate() + 30);
-    const exp1Str = exp1.toISOString().replace('T', ' ').substr(0, 19);
-
-    const exp3 = new Date();
-    exp3.setDate(now.getDate() + 90);
-    const exp3Str = exp3.toISOString().replace('T', ' ').substr(0, 19);
-
-    // Grant access 1 (Stress)
-    await run(
-      'INSERT INTO access (user_id, course_id, expires_at, current_lesson_id) VALUES (?, 1, ?, 1)',
-      [studentResult.id, exp1Str]
-    );
-
-    // Grant access 3 (Base)
-    await run(
-      'INSERT INTO access (user_id, course_id, expires_at, current_lesson_id) VALUES (?, 3, ?, 6)',
-      [studentResult.id, exp3Str]
-    );
-
-    // Seed transaction payments
-    await run(
-      'INSERT INTO payments (user_id, course_id, amount, kaspi_tx_id, status) VALUES (?, ?, ?, ?, ?)',
-      [studentResult.id, 1, 10000, 'KSP_INIT_STRESS', 'paid']
-    );
-    await run(
-      'INSERT INTO payments (user_id, course_id, amount, kaspi_tx_id, status) VALUES (?, ?, ?, ?, ?)',
-      [studentResult.id, 3, 399000, 'KSP_INIT_BASE', 'paid']
-    );
-
-    console.log('Seed: Default student account seeded (student@faceread.kz / StudentPassword123)');
-  }
-
   // Seeding default courses if table is empty
   const coursesCount = await get('SELECT count(*) as count FROM courses');
   if (coursesCount.count === 0) {
@@ -352,6 +295,63 @@ async function initDatabase() {
     );
 
     console.log('Seed: Finished seeding courses, modules, and lessons.');
+  }
+
+  // Seeding default administrator if not exists
+  const adminEmail = 'admin@faceread.kz';
+  const existingAdmin = await get('SELECT * FROM users WHERE email = ?', [adminEmail]);
+  if (!existingAdmin) {
+    const adminPasswordHash = await bcrypt.hash('AdminPassword123', 10);
+    await run(
+      'INSERT INTO users (email, password_hash, name, role, status) VALUES (?, ?, ?, ?, ?)',
+      [adminEmail, adminPasswordHash, 'Жанерке Скакова', 'admin', 'active']
+    );
+    console.log('Seed: Default administrator account seeded (admin@faceread.kz / AdminPassword123)');
+  }
+
+  // Seeding default student if not exists
+  const studentEmail = 'student@faceread.kz';
+  const existingStudent = await get('SELECT * FROM users WHERE email = ?', [studentEmail]);
+  if (!existingStudent) {
+    const studentPasswordHash = await bcrypt.hash('StudentPassword123', 10);
+    const studentResult = await run(
+      'INSERT INTO users (email, password_hash, name, role, status) VALUES (?, ?, ?, ?, ?)',
+      [studentEmail, studentPasswordHash, 'Иван Тестов', 'student', 'active']
+    );
+
+    const now = new Date();
+    
+    const exp1 = new Date();
+    exp1.setDate(now.getDate() + 30);
+    const exp1Str = exp1.toISOString().replace('T', ' ').substr(0, 19);
+
+    const exp3 = new Date();
+    exp3.setDate(now.getDate() + 90);
+    const exp3Str = exp3.toISOString().replace('T', ' ').substr(0, 19);
+
+    // Grant access 1 (Stress)
+    await run(
+      'INSERT INTO access (user_id, course_id, expires_at, current_lesson_id) VALUES (?, 1, ?, 1)',
+      [studentResult.id, exp1Str]
+    );
+
+    // Grant access 3 (Base)
+    await run(
+      'INSERT INTO access (user_id, course_id, expires_at, current_lesson_id) VALUES (?, 3, ?, 6)',
+      [studentResult.id, exp3Str]
+    );
+
+    // Seed transaction payments
+    await run(
+      'INSERT INTO payments (user_id, course_id, amount, kaspi_tx_id, status) VALUES (?, ?, ?, ?, ?)',
+      [studentResult.id, 1, 10000, 'KSP_INIT_STRESS', 'paid']
+    );
+    await run(
+      'INSERT INTO payments (user_id, course_id, amount, kaspi_tx_id, status) VALUES (?, ?, ?, ?, ?)',
+      [studentResult.id, 3, 399000, 'KSP_INIT_BASE', 'paid']
+    );
+
+    console.log('Seed: Default student account seeded (student@faceread.kz / StudentPassword123)');
   }
 }
 
