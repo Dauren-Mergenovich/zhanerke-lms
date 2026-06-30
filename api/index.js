@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
-const { initDatabase, run, get, all } = require('./database');
+const { initDatabase, run, get, all } = require('../database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,11 +15,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Serve static files from root
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, '..')));
 // Support asset folders explicitly
-app.use('/Фото', express.static(path.join(__dirname, 'Фото')));
-app.use('/Лого и картинки ', express.static(path.join(__dirname, 'Лого и картинки ')));
-app.use('/Дипломы и Сертификаты', express.static(path.join(__dirname, 'Дипломы и Сертификаты')));
+app.use('/Фото', express.static(path.join(__dirname, '..', 'Фото')));
+app.use('/Лого и картинки ', express.static(path.join(__dirname, '..', 'Лого и картинки ')));
+app.use('/Дипломы и Сертификаты', express.static(path.join(__dirname, '..', 'Дипломы и Сертификаты')));
 
 // Authentication Middleware
 const authenticateUser = async (req, res, next) => {
@@ -471,7 +471,7 @@ Subject: Доступ к курсу "${course.title}" активирован!
 Команда Жанерке Скаковой.
 ==========================
 `;
-      const emailLogDir = path.join(__dirname, 'mock_emails');
+      const emailLogDir = path.join(__dirname, '..', 'mock_emails');
       if (!fs.existsSync(emailLogDir)) {
         fs.mkdirSync(emailLogDir);
       }
@@ -782,22 +782,26 @@ function formatYoutubeEmbed(url) {
 
 // Redirect endpoints to make browser navigation clean
 app.get('/student', (req, res) => {
-  res.sendFile(path.join(__dirname, 'student.html'));
+  res.sendFile(path.join(__dirname, '..', 'student.html'));
 });
 
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin_login.html'));
+  res.sendFile(path.join(__dirname, '..', 'admin_login.html'));
 });
 
 app.get('/admin/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'admin.html'));
+  res.sendFile(path.join(__dirname, '..', 'admin.html'));
 });
 
 // Run DB init and start listening
 initDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Zhanerke LMS Server running on http://localhost:${PORT}`);
-  });
+  if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+      console.log(`Zhanerke LMS Server running on http://localhost:${PORT}`);
+    });
+  }
 }).catch(err => {
   console.error('Failed to initialize database:', err);
 });
+
+module.exports = app;
