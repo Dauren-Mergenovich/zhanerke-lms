@@ -1,42 +1,86 @@
-const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const path = require('path');
 
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'database.sqlite');
-const db = new sqlite3.Database(dbPath);
+let db, run, get, all;
 
-// Enable foreign keys
-db.serialize(() => {
-  db.run('PRAGMA foreign_keys = ON;');
-});
-
-// Promise-based wrappers
-const run = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
-      if (err) reject(err);
-      else resolve({ id: this.lastID, changes: this.changes });
-    });
+if (process.env.TURSO_DATABASE_URL) {
+  // Cloud Database (Turso) for Vercel / Production
+  console.log('Connecting to remote Turso database...');
+  const { createClient } = require('@libsql/client/web');
+  db = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
   });
-};
 
-const get = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
-};
+  run = async (sql, params = []) => {
+    try {
+      const res = await db.execute({ sql, args: params });
+      const lastInsertRowid = res.lastInsertRowid !== undefined ? Number(res.lastInsertRowid) : null;
+      return { id: lastInsertRowid, changes: res.rowsAffected };
+    } catch (err) {
+      console.error('Turso Execute Run Error:', err, 'SQL:', sql, 'Params:', params);
+      throw err;
+    }
+  };
 
-const all = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
+  get = async (sql, params = []) => {
+    try {
+      const res = await db.execute({ sql, args: params });
+      return res.rows[0] || null;
+    } catch (err) {
+      console.error('Turso Execute Get Error:', err, 'SQL:', sql, 'Params:', params);
+      throw err;
+    }
+  };
+
+  all = async (sql, params = []) => {
+    try {
+      const res = await db.execute({ sql, args: params });
+      return res.rows;
+    } catch (err) {
+      console.error('Turso Execute All Error:', err, 'SQL:', sql, 'Params:', params);
+      throw err;
+    }
+  };
+} else {
+  // Local Database (sqlite3) for Development
+  console.log('Connecting to local SQLite database...');
+  const sqlite3 = require('sqlite3').verbose();
+  const dbPath = process.env.DATABASE_PATH || path.join(__dirname, 'database.sqlite');
+  db = new sqlite3.Database(dbPath);
+
+  // Enable foreign keys
+  db.serialize(() => {
+    db.run('PRAGMA foreign_keys = ON;');
   });
-};
+
+  run = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.run(sql, params, function(err) {
+        if (err) reject(err);
+        else resolve({ id: this.lastID, changes: this.changes });
+      });
+    });
+  };
+
+  get = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.get(sql, params, (err, row) => {
+        if (err) reject(err);
+        else resolve(row || null);
+      });
+    });
+  };
+
+  all = (sql, params = []) => {
+    return new Promise((resolve, reject) => {
+      db.all(sql, params, (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows || []);
+      });
+    });
+  };
+}
 
 // Initialize schema and seed data
 async function initDatabase() {
