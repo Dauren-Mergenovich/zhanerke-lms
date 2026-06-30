@@ -328,7 +328,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!res.ok) {
                     throw new Error(data.error || 'Ошибка запроса сброса пароля');
                 }
-                forgotSuccess.textContent = data.message || 'Ссылка отправлена!';
+                if (data.link) {
+                    forgotSuccess.innerHTML = `${data.message}<br><a href="${data.link}" target="_blank" style="color: var(--gold); word-break: break-all; display: inline-block; margin-top: 10px;">${data.link}</a>`;
+                } else {
+                    forgotSuccess.textContent = data.message || 'Ссылка отправлена!';
+                }
                 forgotForm.reset();
             } catch (err) {
                 forgotError.textContent = err.message;
