@@ -72,6 +72,21 @@ app.use(authenticateUser);
 // --- AUTH API ---
 
 // Register student
+app.get('/api/debug-env', (req, res) => {
+  const dbUrl = process.env.TURSO_DATABASE_URL || '';
+  const token = process.env.TURSO_AUTH_TOKEN || '';
+  res.json({
+    dbUrlExists: !!process.env.TURSO_DATABASE_URL,
+    dbUrlLength: dbUrl.length,
+    dbUrlPrefix: dbUrl.substring(0, 15),
+    dbUrlSuffix: dbUrl.substring(dbUrl.length - 10),
+    tokenExists: !!process.env.TURSO_AUTH_TOKEN,
+    tokenLength: token.length,
+    tokenPrefix: token.substring(0, 15),
+    tokenSuffix: token.substring(token.length - 10)
+  });
+});
+
 app.post('/api/auth/register', async (req, res) => {
   const { email, password, name } = req.body;
   if (!email || !password || !name) {
