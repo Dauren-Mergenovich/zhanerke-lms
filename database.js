@@ -8,8 +8,8 @@ if (process.env.TURSO_DATABASE_URL) {
   console.log('Connecting to remote Turso database...');
   const { createClient } = require('@libsql/client/web');
   db = createClient({
-    url: process.env.TURSO_DATABASE_URL,
-    authToken: process.env.TURSO_AUTH_TOKEN,
+    url: process.env.TURSO_DATABASE_URL.trim(),
+    authToken: process.env.TURSO_AUTH_TOKEN ? process.env.TURSO_AUTH_TOKEN.trim() : undefined,
   });
 
   run = async (sql, params = []) => {
