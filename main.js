@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error(data.error || 'Ошибка запроса сброса пароля');
                 }
                 if (data.link) {
-                    forgotSuccess.innerHTML = `${data.message}<br><a href="${data.link}" target="_blank" style="color: var(--gold); word-break: break-all; display: inline-block; margin-top: 10px;">${data.link}</a>`;
+                    forgotSuccess.innerHTML = `${data.message}<br><a href="${data.link}" target="_blank" style="color: var(--gold); font-weight: 500; text-decoration: underline; display: inline-block; margin-top: 10px;">[Сбросить пароль]</a>`;
                 } else {
                     forgotSuccess.textContent = data.message || 'Ссылка отправлена!';
                 }
