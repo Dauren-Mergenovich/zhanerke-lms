@@ -789,6 +789,10 @@ function formatYoutubeEmbed(url) {
 }
 
 // Redirect endpoints to make browser navigation clean
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
+});
+
 app.get('/student', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'student.html'));
 });

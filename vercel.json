@@ -16,11 +16,15 @@
     {
       "source": "/admin/dashboard",
       "destination": "/api/index.js?path=/admin/dashboard"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js?path=/$1"
     }
   ],
   "functions": {
     "api/index.js": {
-      "includeFiles": "*.html"
+      "includeFiles": "{*.html,*.css,*.js,Фото/**,Лого и картинки/**,Дипломы и Сертификаты/**}"
     }
   }
 }
